@@ -59,7 +59,7 @@ for i = 1:length(samples_tcga)
     entries = samples_tcga{i,2};
     for j = 1:height(entries)
         entry = entries(j,:);
-        gene_name = entry{1,1};
+        gene_name = entry{1,1}{1};
         gene_id = entry{1,2};
         if ~ismember(gene_name,mutated_genes)
             mutated_genes = [mutated_genes; gene_name];
