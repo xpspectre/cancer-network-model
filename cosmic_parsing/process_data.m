@@ -1,8 +1,10 @@
 %% Import and get only breast cancer data
 % data = CosmicMutantExportCensusv68210114(strcmp('breast',CosmicMutantExportCensusv68210114.Primarysite),:);
-data = CosmicMutantExportIncFusv68210114(strcmp('breast',CosmicMutantExportIncFusv68210114.Primarysite),:);
+% data = CosmicMutantExportIncFusv68210114(strcmp('breast',CosmicMutantExportIncFusv68210114.Primarysite),:);
+% 
+% save CosmicIncFus_breast data
 
-save CosmicIncFus_breast data
+load CosmicIncFus_breast
 
 %% List of mutated genes
 genes = unique(data.Genename);
@@ -48,3 +50,31 @@ for i = 1:length(samples_tcga)
     counts(i) = height(samples_tcga{i,2});
 end
 mean_counts = mean(counts);
+
+%% Get list of all genes mutated in TCGA breast cancer data
+mutated_genes = {};
+mutated_gene_ids = [];
+mutated_gene_id_pairs = {};
+for i = 1:length(samples_tcga)
+    entries = samples_tcga{i,2};
+    for j = 1:height(entries)
+        entry = entries(j,:);
+        gene_name = entry{1,1};
+        gene_id = entry{1,2};
+        if ~ismember(gene_name,mutated_genes)
+            mutated_genes = [mutated_genes; gene_name];
+        end
+        if ~isnan(gene_id) && ~ismember(gene_id,mutated_gene_ids)
+            mutated_gene_ids = [mutated_gene_ids; gene_id];
+            mutated_gene_id_pairs = [mutated_gene_id_pairs; {gene_id, gene_name}];
+        end
+    end
+end
+mutated_genes = sort(mutated_genes); % alphabetic order
+mutated_gene_ids = sort(mutated_gene_ids);
+mutated_gene_id_pairs = sortrows(mutated_gene_id_pairs,1);
+
+save gene_id_list mutated_gene_id_pairs
+
+T = cell2table(mutated_gene_id_pairs,'VariableNames',{'HGNC_ID','Name'});
+writetable(T,'gene_id_list.txt','Delimiter','\t');
