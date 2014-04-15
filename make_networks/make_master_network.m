@@ -51,9 +51,12 @@ for i = 1:height(interactions)
     % Only consider pairs where both proteins are network proteins
     p1pos = find(strcmp(p1,network_proteins));
     p2pos = find(strcmp(p2,network_proteins));
-    if isempty(p1pos) || isempty(p2pos)
+    if isempty(p1pos) || isempty(p2pos) % interaction not found
         continue
-    else % Interacting pair found
+    elseif strcmp(p1,p2) % only add once to diagonal for self-interaction
+        idx_i = [idx_i; p1pos];
+        idx_j = [idx_j; p2pos];
+    else % interacting pair found
         idx_i = [idx_i; p1pos; p2pos];
         idx_j = [idx_j; p2pos; p1pos];
     end
