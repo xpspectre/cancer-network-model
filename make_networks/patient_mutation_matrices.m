@@ -26,3 +26,18 @@ for i = 1:num_patients
 end
 
 save patient_mutation_data patient_data A_index
+
+%% Convert patient data matrix into format for hotnet
+load patient_mutation_data
+f = fopen('patient_mutations.txt','w');
+for i = 1:size(patient_data,1)
+    name = patient_data{i,1};
+    fprintf(f,'%s\t',name);
+    genes = patient_data{i,3};
+    for j = 1:length(genes)
+        gene = genes{j};
+        fprintf(f,'%s\t',gene);
+    end
+    fprintf(f,'\n');
+end
+fclose(f);
