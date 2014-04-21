@@ -13,7 +13,7 @@ end
 fclose(f);
 
 %% Get mutations for patients
-load patient_mutations
+load patient_data
 
 num_subnets = size(networks,1);
 num_patients = size(patient_data,1);
@@ -44,7 +44,7 @@ end
 %% Calculate mutual exclusivity
 %     # x1 and x2 are vectors of 1 and 0, 1 for
 %     # mutated and 0 for not mutated.
-chis = [];
+pairwise_mex = [];
 for i = 1:num_subnets
     net_mat = net_matrices{i};
     num_sub_genes = size(net_mat,1);
@@ -56,10 +56,23 @@ for i = 1:num_subnets
     for j = 1:size(pair_positions,1)
         p1 = pair_positions(j,1);
         p2 = pair_positions(j,2);
+        
+        % Calculate mutual exclusivity
         joint_count = sum(net_mat(p1,:).*net_mat(p2,:)); % number of times mutation appears in both patients at once
         joint_prob = joint_count/num_patients;
         chi = joint_prob/(gene_probs(p1)*gene_probs(p2));
-        chis = [chis; i, p1, p2, chi];
+        
+        % Calculate p-val
+        pval = hygecdf(joint_count,num_patients,gene_counts(p1),gene_counts(p2));
+        
+        pairwise_mex = [pairwise_mex; i, p1, p2, chi, pval];
     end
 end
 
+%% Process results
+% Sort by pval
+pairwise_mex = sortrows(pairwise_mex,5);
+
+labels = {'network','gene1','gene2','chi','pval'};
+
+save pairwise_mex pairwise_mex labels networks
