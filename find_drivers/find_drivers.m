@@ -1,15 +1,32 @@
 %% Get networks from hotnet
+clear;clc;close all
 
-f = fopen('components.txt','r');
+f = fopen('components_multi.txt','r');
 
-tline = fgets(f);
 networks = {};
+tline = fgetl(f);
 while ischar(tline)
     C = strsplit(tline,'\t');
     networks = [networks;{C}];
-    tline = fgets(f);
+    tline = fgetl(f);
+end
+fclose(f);
+
+% Make a list of all genes in all networks
+all_mutations = {};
+for i = 1:size(networks,1)
+    net_genes = networks{i};
+    for j = 1:size(net_genes,2)
+        all_mutations = [all_mutations; net_genes{j}];
+    end
 end
 
+save all_mutations all_mutations
+
+f = fopen('all_mutations.txt','w');
+for i = 1:size(all_mutations,1)
+    fprintf(f,'%s\n',all_mutations{i,1});
+end
 fclose(f);
 
 %% Get mutations for patients
@@ -76,3 +93,18 @@ pairwise_mex = sortrows(pairwise_mex,5);
 labels = {'network','gene1','gene2','chi','pval'};
 
 save pairwise_mex pairwise_mex labels networks
+
+f = fopen('pairwise_mex.txt','w');
+fprintf(f,'network\tgene1\tgene2\tchi\tpval\n');
+for i = 1:size(pairwise_mex,1)
+    % Get gene names
+    network_genes = networks{pairwise_mex(i,1)};
+    gene1 = network_genes{pairwise_mex(i,2)};
+    gene2 = network_genes{pairwise_mex(i,3)};
+    
+    % Print to file
+    fprintf(f,'%d\t%s\t%s\t%f\t%f\n',pairwise_mex(i,1),gene1,gene2,...
+                                     pairwise_mex(i,4),pairwise_mex(i,5));
+
+end
+fclose(f);
